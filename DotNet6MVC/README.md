@@ -125,7 +125,7 @@ Inside the `<head>` tag at the end:
     @await RenderSectionAsync("AppTop", required: false)
 ```
 
-Inside the end of the `<body>` tag:
+Inside the end of the `<body>` tag, remove the `<footer>` tag and add:
 
 ```html
     @* WET footer display *@
