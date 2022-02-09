@@ -118,20 +118,7 @@ Inside the `<head>` tag at the end:
     @* Configure WET apptop TODO *@
     <script>
         let appTop = {
-            appName: [{ text: "@Localizer["AppName"]", href: "@Url.PageSameCulture("Index")" }],
-            lngLinks: [
-                {
-                    lang: "@flippedCultureValue",
-                    href: window.location.pathname.replace(/^\/\w+\/(.*)$/, "/@flippedCultureValue/$1"),
-                    text: "@flippedCultureName",
-                },
-            ],
-            breadcrumbs: [
-                {
-                    title: "@Localizer["Breadcrumb.Home"]",
-                    href: "@Url.PageSameCulture("/Index")",
-                },
-            ]
+            appName: [{ text: "MyApp" }],
         };
     </script>
     @* Add per-page apptop config *@
