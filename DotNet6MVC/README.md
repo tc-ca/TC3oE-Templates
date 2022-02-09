@@ -141,17 +141,6 @@ Inside the end of the `<body>` tag, remove the `<footer>` tag and add:
     </script>
 ```
 
-Additionally, we want to remove the following lines since WET loads its own version of Bootstrap and JQuery.
-
-```diff
-# from <head>
-- <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
-
-# from <body>
-- <script src="~/lib/jquery/dist/jquery.min.js"></script>
-- <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-```
-
 Remove the `<header>` tag and add:
 
 ```html
@@ -163,4 +152,18 @@ Remove the `<header>` tag and add:
     </script>
 ```
 
+Additionally, we want to remove the following lines since WET loads its own version of Bootstrap and JQuery.
+
+```diff
+# from <head>
+- <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+
+# from <body>
+- <script src="~/lib/jquery/dist/jquery.min.js"></script>
+- <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+```
+
+We can also delete the contents of `wwwroot/lib`.
+
 We can also clear the contents of `wwwroot/css/site.css`.
+
