@@ -46,11 +46,11 @@ See also: [should I consider my Azure tenant id a secret?](https://security.stac
 
 ### Azure auth config
 
-You will need to add the reply url to your app registration in the Azure portal to ensure you don't get errors while logging in.  
+You will need to add the reply url to your app registration in the Azure portal to ensure you don't get errors while logging in.
 
 _The port number can be omitted._
 
-![](./images/addreplyurl.png)
+![Azure interface for adding reply URLs](./images/addreplyurl.png)
 
 ### Test run
 
@@ -60,18 +60,27 @@ At this point, you can test the app by running
 dotnet run
 ```
 
+or by running
+
+```powershell
+dotnet watch run
+```
+
+which will reload the app when changes are made.
+
 Alternatively, the C# extension will prompt you to add build configs which allows you to run using your VSCode shortcuts.
 
-![](./images/buildconfig.png)
+![VSCode prompting to add build configurations](./images/buildconfig.png)
 
+Sometimes I get errors using the VSCode launch instead of the command, so try the command if you get weird errors such as `Index.cshtml not found`.
 
 You should see your email in the top right if the signin is working.
 
-![](./images/authtestgood.png)
+![Web page loading successfully with user's email](./images/authtestgood.png)
 
 If the reply urls are misconfigured, you will receive an error like this:
 
-![](./images/badreplyurl.png)
+![Web page failing to load due to login error](./images/badreplyurl.png)
 
 ### Gitignore
 
@@ -81,3 +90,88 @@ Rather than creating a `.gitignore` file manually, you can just use the followin
 ```powershell
 dotnet new gitignore
 ```
+
+### Adding localization
+
+[We are responsible for ensuring that we deliver content in both official languages](https://www.tbs-sct.gc.ca/pol/doc-eng.aspx?id=26164). This doesn't necessarily _require_ that the URL (beyond the domain name) is also localized, but it's not difficult to add.
+
+Microsoft guides on ASP.NET localization are available [here](https://docs.microsoft.com/en-us/aspnet/core/fundamentals/localization?view=aspnetcore-6.0), but the important steps will be copied to this document.
+
+### Adding WET
+
+The Web Experience Toolkit (WET) framework enables government sites to share a common look and feel without having to [reimplement everything from scratch](https://www.canada.ca/en/treasury-board-secretariat/services/government-communications/federal-identity-program/technical-specifications/web-mobile-presence.html).
+
+In this case, we can make our new app adopt the government theming by editing `Views/Shared/_Layout.cshtml`
+
+Inside the `<head>` tag at the end:
+
+```html
+    @* WET CDTS *@
+    <script src="https://ssl-templates.services.gc.ca/rn/cls/wet/gcintranet/cdts/compiled/soyutils.js"></script>
+    <script src="https://ssl-templates.services.gc.ca/rn/cls/wet/gcintranet/cdts/compiled/wet-en.js"></script>
+    <script>
+        document.write(wet.builder.refTop({}));
+    </script>
+    
+    @* Configure WET apptop TODO *@
+    <script>
+        let appTop = {
+            appName: [{ text: "@Localizer["AppName"]", href: "@Url.PageSameCulture("Index")" }],
+            lngLinks: [
+                {
+                    lang: "@flippedCultureValue",
+                    href: window.location.pathname.replace(/^\/\w+\/(.*)$/, "/@flippedCultureValue/$1"),
+                    text: "@flippedCultureName",
+                },
+            ],
+            breadcrumbs: [
+                {
+                    title: "@Localizer["Breadcrumb.Home"]",
+                    href: "@Url.PageSameCulture("/Index")",
+                },
+            ]
+        };
+    </script>
+    @* Add per-page apptop config *@
+    @await RenderSectionAsync("AppTop", required: false)
+```
+
+Inside the end of the `<body>` tag:
+
+```html
+    @* WET footer display *@
+    <footer id="def-footer"></footer>
+    <script>
+        var defFooter = document.getElementById("def-footer");
+        defFooter.innerHTML = wet.builder.footer({});
+    </script>
+
+    @* WET footer scripts *@
+    <script>
+        document.write(wet.builder.refFooter({}));
+    </script>
+```
+
+Additionally, we want to remove the following lines since WET loads its own version of Bootstrap and JQuery.
+
+```diff
+# from <head>
+- <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+
+# from <body>
+- <script src="~/lib/jquery/dist/jquery.min.js"></script>
+- <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+```
+
+Remove the `<header>` tag and add:
+
+```html
+    @* WET header *@
+    <div id="def-top"></div>
+    <script>
+        var defTop = document.getElementById("def-top");
+        defTop.innerHTML = wet.builder.appTop(appTop);
+    </script>
+```
+
+We can also clear the contents of `wwwroot/css/site.css`.
