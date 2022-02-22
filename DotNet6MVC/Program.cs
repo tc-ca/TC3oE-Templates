@@ -1,12 +1,9 @@
-using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.Identity.Web;
 using Microsoft.Identity.Web.UI;
 using System.Globalization;
-using Microsoft.AspNetCore.Localization;
-using Microsoft.AspNetCore.Localization.Routing;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -43,7 +40,7 @@ if (!app.Environment.IsDevelopment())
             var language = ctx.Request.Path.Value?.Length >= 3 ? ctx.Request.Path.Value.Substring(1, 2) : "en";
             if (language.Equals("en")) ctx.Response.Redirect($"{ctx.Request.PathBase.Value}/{language}/error");
             if (language.Equals("fr")) ctx.Response.Redirect($"{ctx.Request.PathBase.Value}/{language}/erreur");
-            return Task.Delay(0);
+            return Task.CompletedTask;
         });
     });
     // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
@@ -59,10 +56,8 @@ app.UseRequestLocalization(options =>
         new CultureInfo("en"),
         new CultureInfo("fr")
     };
-    options.DefaultRequestCulture = new RequestCulture(options.SupportedCultures[0]);
-    options.RequestCultureProviders.Insert(0, new RouteDataRequestCultureProvider{
-        Options = options
-    });
+    options.DefaultRequestCulture = new Microsoft.AspNetCore.Localization.RequestCulture(options.SupportedCultures[0]);
+    options.RequestCultureProviders.Insert(0, new Microsoft.AspNetCore.Localization.Routing.RouteDataRequestCultureProvider { Options = options});
 });
 
 
@@ -73,7 +68,10 @@ app.UseAuthorization();
 
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}");
+    pattern: "{culture}/{controller}/{action}/{id?}"
+);
+
+
 app.MapRazorPages();
 
 app.Run();

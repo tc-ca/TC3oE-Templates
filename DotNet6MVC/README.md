@@ -99,6 +99,31 @@ dotnet new gitignore
 
 Microsoft guides on ASP.NET localization are available [here](https://docs.microsoft.com/en-us/aspnet/core/fundamentals/localization?view=aspnetcore-6.0), but the important steps will be copied to this document.
 
+First we will create the file `Helpers/RouteDataRequestCultureProvider.cs`
+
+```
+using Microsoft.AspNetCore.Localization;
+
+namespace DotNet6MVC.Helpers;
+
+#nullable disable
+public class RouteDataRequestCultureProvider : RequestCultureProvider
+{
+	public override Task<ProviderCultureResult> DetermineProviderCultureResult(HttpContext httpContext)
+	{
+		if (httpContext?.Request?.Path.Value == null)
+			return Task.FromResult(new ProviderCultureResult(DefaultCulture));
+
+		var culture = httpContext.Request.Path.Value.Split('/')[1];
+		return Task.FromResult(Options.SupportedCultures.Any(x => x.TwoLetterISOLanguageName.Equals(culture, StringComparison.InvariantCultureIgnoreCase))
+			? new ProviderCultureResult(culture)
+			: new ProviderCultureResult(DefaultCulture));
+	}
+
+	private string DefaultCulture => Options.DefaultRequestCulture.Culture.TwoLetterISOLanguageName;
+}
+```
+
 Inside `Program.cs` we want to add a few lines:
 
 ```diff
@@ -117,7 +142,6 @@ builder.Services.AddControllersWithViews(options =>
 
 ...
 
-
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
@@ -129,7 +153,7 @@ if (!app.Environment.IsDevelopment())
 +             var language = ctx.Request.Path.Value?.Length >= 3 ? ctx.Request.Path.Value.Substring(1, 2) : "en";
 +             if (language.Equals("en")) ctx.Response.Redirect($"{ctx.Request.PathBase.Value}/{language}/error");
 +             if (language.Equals("fr")) ctx.Response.Redirect($"{ctx.Request.PathBase.Value}/{language}/erreur");
-+             return Task.Delay(0);
++             return Task.CompletedTask;
 +         });
 +     });
     // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
@@ -144,11 +168,17 @@ if (!app.Environment.IsDevelopment())
 +         new CultureInfo("en"),
 +         new CultureInfo("fr")
 +     };
-+     options.DefaultRequestCulture = new RequestCulture(options.SupportedCultures[0]);
-+     options.RequestCultureProviders.Insert(0, new RouteDataRequestCultureProvider{
-+         Options = options
-+     });
++     options.DefaultRequestCulture = new Microsoft.AspNetCore.Localization.RequestCulture(options.SupportedCultures[0]);
++     options.RequestCultureProviders.Insert(0, new Microsoft.AspNetCore.Localization.Routing.RouteDataRequestCultureProvider { Options = options});
 + });
+
+...
+
+app.MapControllerRoute(
+    name: "default",
+-    pattern: "{controller=Home}/{action=Index}/{id?}");
++    pattern: "{culture}/{controller}/{action}/{id?}");
+
 ```
 
 From here, we can add custom urls to our controller methods.  
@@ -157,6 +187,9 @@ In `HomeController.cs`
 ```diff
 +    [HttpGet("/{culture:regex(en)}/home")]
 +    [HttpGet("/{culture:regex(fr)}/hom")]
++    [HttpGet("/{culture:regex(en)}")]
++    [HttpGet("/{culture:regex(fr)}")]
++    [HttpGet("/")]
     public IActionResult Index()
     {
         return View();
@@ -180,8 +213,20 @@ In `HomeController.cs`
     }
 ```
 
-Note that this changes the route from `/Home/Privacy` to `/en/privacy`
+Note that this changes the route from `/Home/Privacy` to `/en/privacy` since we explicitly set the route.  
+If we created a new endpoint without an `HttpGet` decorator, it would follow the normal convention.
 
+For example:
+
+```c#
+public IActionResult Beans()
+{
+    return View();
+}
+```
+
+This route would be accessible from `/en/Home/Beans` and `/fr/Home/Beans` (since the controller is called `Home`).  
+Explicitly setting the routes lets them be fully localized.
 
 ### Adding WET
 
