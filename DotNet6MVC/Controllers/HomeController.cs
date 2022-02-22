@@ -15,11 +15,16 @@ public class HomeController : Controller
         _logger = logger;
     }
 
+    [HttpGet("/{culture:regex(en)}/home")]
+    [HttpGet("/{culture:regex(fr)}/hom")]
     public IActionResult Index()
     {
         return View();
     }
 
+
+    [HttpGet("/{culture:regex(en)}/privacy")]
+    [HttpGet("/{culture:regex(fr)}/privee")]
     public IActionResult Privacy()
     {
         return View();
@@ -27,6 +32,8 @@ public class HomeController : Controller
 
     [AllowAnonymous]
     [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
+    [HttpGet("/{culture:regex(en)}/error")]
+    [HttpGet("/{culture:regex(fr)}/erreur")]
     public IActionResult Error()
     {
         return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });

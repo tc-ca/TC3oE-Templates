@@ -99,6 +99,90 @@ dotnet new gitignore
 
 Microsoft guides on ASP.NET localization are available [here](https://docs.microsoft.com/en-us/aspnet/core/fundamentals/localization?view=aspnetcore-6.0), but the important steps will be copied to this document.
 
+Inside `Program.cs` we want to add a few lines:
+
+```diff
++ builder.Services.AddLocalization();
+
+builder.Services.AddControllersWithViews(options =>
+{
++    options.EnableEndpointRouting = true;
+    var policy = new AuthorizationPolicyBuilder()
+        .RequireAuthenticatedUser()
+        .Build();
+    options.Filters.Add(new AuthorizeFilter(policy));
+- });
++ })
++.AddViewLocalization(Microsoft.AspNetCore.Mvc.Razor.LanguageViewLocationExpanderFormat.Suffix);
+
+...
+
+
+// Configure the HTTP request pipeline.
+if (!app.Environment.IsDevelopment())
+{
+-     app.UseExceptionHandler("/Home/Error");
++     app.UseExceptionHandler(o =>
++     {
++         o.Run(ctx =>
++         {
++             var language = ctx.Request.Path.Value?.Length >= 3 ? ctx.Request.Path.Value.Substring(1, 2) : "en";
++             if (language.Equals("en")) ctx.Response.Redirect($"{ctx.Request.PathBase.Value}/{language}/error");
++             if (language.Equals("fr")) ctx.Response.Redirect($"{ctx.Request.PathBase.Value}/{language}/erreur");
++             return Task.Delay(0);
++         });
++     });
+    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
+    app.UseHsts();
+}
+
+...
+
++ app.UseRequestLocalization(options =>
++ {
++     options.SupportedCultures = new[]{
++         new CultureInfo("en"),
++         new CultureInfo("fr")
++     };
++     options.DefaultRequestCulture = new RequestCulture(options.SupportedCultures[0]);
++     options.RequestCultureProviders.Insert(0, new RouteDataRequestCultureProvider{
++         Options = options
++     });
++ });
+```
+
+From here, we can add custom urls to our controller methods.  
+In `HomeController.cs`
+
+```diff
++    [HttpGet("/{culture:regex(en)}/home")]
++    [HttpGet("/{culture:regex(fr)}/hom")]
+    public IActionResult Index()
+    {
+        return View();
+    }
+    
++    [HttpGet("/{culture:regex(en)}/privacy")]
++    [HttpGet("/{culture:regex(fr)}/privee")]
+    public IActionResult Privacy()
+    {
+        return View();
+    }
+
+    
+    [AllowAnonymous]
+    [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
++    [HttpGet("/{culture:regex(en)}/error")]
++    [HttpGet("/{culture:regex(fr)}/erreur")]
+    public IActionResult Error()
+    {
+        return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+    }
+```
+
+Note that this changes the route from `/Home/Privacy` to `/en/privacy`
+
+
 ### Adding WET
 
 The Web Experience Toolkit (WET) framework enables government sites to share a common look and feel without having to [reimplement everything from scratch](https://www.canada.ca/en/treasury-board-secretariat/services/government-communications/federal-identity-program/technical-specifications/web-mobile-presence.html).
