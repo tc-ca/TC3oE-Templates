@@ -1,7 +1,5 @@
 # DotNet6 Quickstart
 
-**THIS IS A WORK IN PROGRESS**
-
 The goal of this project is not to provide a template for you to clone.  
 Instead, this guide will tell you how to expand on the built in templates that the `dotnet new` command provides.
 
