@@ -16,7 +16,7 @@ public class HomeController : Controller
     }
 
     [HttpGet("/{culture:regex(en)}/home")]
-    [HttpGet("/{culture:regex(fr)}/hom")]
+    [HttpGet("/{culture:regex(fr)}/accueil")]
     [HttpGet("/{culture:regex(en)}")]
     [HttpGet("/{culture:regex(fr)}")]
     [HttpGet("/")]
@@ -32,7 +32,7 @@ public class HomeController : Controller
 
 
     [HttpGet("/{culture:regex(en)}/privacy")]
-    [HttpGet("/{culture:regex(fr)}/privee")]
+    [HttpGet("/{culture:regex(fr)}/confidentialité")]
     public IActionResult Privacy()
     {
         return View();

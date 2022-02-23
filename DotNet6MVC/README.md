@@ -127,7 +127,8 @@ public class RouteDataRequestCultureProvider : RequestCultureProvider
 Inside `Program.cs` we want to add a few lines:
 
 ```diff
-+ builder.Services.AddLocalization();
++ builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");
+
 
 builder.Services.AddControllersWithViews(options =>
 {
@@ -138,7 +139,7 @@ builder.Services.AddControllersWithViews(options =>
     options.Filters.Add(new AuthorizeFilter(policy));
 - });
 + })
-+.AddViewLocalization(Microsoft.AspNetCore.Mvc.Razor.LanguageViewLocationExpanderFormat.Suffix);
++.AddViewLocalization();
 
 ...
 

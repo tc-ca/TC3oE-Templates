@@ -1,6 +1,7 @@
 ﻿<!DOCTYPE html>
-<html lang="en">
+<html lang="@Context.GetCurrentCulture()">
 <head>
+    <meta http-equiv="content-language" content="@Context.GetCurrentCulture()-CA" />
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - DotNet6MVC</title>
@@ -9,7 +10,7 @@
     
     @* WET CDTS *@
     <script src="https://ssl-templates.services.gc.ca/rn/cls/wet/gcintranet/cdts/compiled/soyutils.js"></script>
-    <script src="https://ssl-templates.services.gc.ca/rn/cls/wet/gcintranet/cdts/compiled/wet-en.js"></script>
+    <script src="https://ssl-templates.services.gc.ca/rn/cls/wet/gcintranet/cdts/compiled/wet-@(Context.GetCurrentCulture()).js"></script>
     <script>
         document.write(wet.builder.refTop({}));
     </script>
@@ -17,7 +18,16 @@
     @* Configure WET apptop TODO *@
     <script>
         let appTop = {
-            appName: [{ text: "MyApp"}]
+            appName: [{ text: "@Localizer["AppName"]", href: "@Url.Action("Index", "Home", new {culture= @Context.GetCurrentCulture()})" }],
+            lngLinks: [
+                @Html.Raw(Context.GetFlippedLanguageLinkObject(Url))
+            ],
+            breadcrumbs: [
+                {
+                    title: "@Localizer["Breadcrumb.Home"]",
+                    href: "@Url.Action("Index", "Home", new {culture= @Context.GetCurrentCulture()})",
+                },
+            ]
         };
     </script>
     @* Add per-page apptop config *@
