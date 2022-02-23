@@ -7,6 +7,12 @@ This ensures that new projects will benefit from changes to the builtin template
 
 This guide expects you to be using Visual Studio Code with the C# extension installed.
 
+## Features added
+
+- AzureAD Authentication
+- Localization
+- WET support
+
 ## Walthrough
 
 This guide will focus on MVC as it the standard used by the majority of TC development teams.
