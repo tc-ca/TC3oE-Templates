@@ -19,8 +19,13 @@ public class HomeController : Controller
     [HttpGet("/{culture:regex(fr)}/accueil")]
     [HttpGet("/{culture:regex(en)}")]
     [HttpGet("/{culture:regex(fr)}")]
-    [HttpGet("/")]
     public IActionResult Index()
+    {
+        return View();
+    }
+
+    [HttpGet("/")]
+    public IActionResult Splash()
     {
         return View();
     }

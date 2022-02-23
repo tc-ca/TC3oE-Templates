@@ -1,0 +1,32 @@
+@{
+    Layout = null;
+}
+
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>@Localizer["AppName"]</title>
+
+    <!--CDTS-->
+    <script type="text/javascript" src="https://www.canada.ca/etc/designs/canada/cdts/gcweb/rn/cdts/compiled/soyutils.js"></script>
+    <script type="text/javascript" src="https://www.canada.ca/etc/designs/canada/cdts/gcweb/rn/cdts/compiled/wet-en.js"></script>
+    <script>
+        document.write(wet.builder.splashTop({
+        }));
+    </script>
+</head>
+<body class="splash">
+    <div id="splashContent">
+        <script type="text/javascript">
+            var sc = document.getElementById('splashContent');
+            sc.innerHTML = wet.builder.splash({
+                indexEng: "@Url.Action("Index", "Home", new { culture = "en"})",
+                indexFra: "@Url.Action("Index", "Home", new { culture = "fr"})",
+                termsEng: "https://tc.canada.ca/en/corporate-services/important-notices",
+                termsFra: "https://tc.canada.ca/fr/services-generaux/avis-importants"
+            });
+        </script>
+    </div>
+</body>
+</html>

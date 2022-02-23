@@ -291,6 +291,10 @@ with resx files being created under `Resources/Views/Home/Index.en.resx` and `Re
 
 The Web Experience Toolkit (WET) framework enables government sites to share a common look and feel without having to [reimplement everything from scratch](https://www.canada.ca/en/treasury-board-secretariat/services/government-communications/federal-identity-program/technical-specifications/web-mobile-presence.html).
 
+![English index page](./images/index_en.png)
+
+![French index page](./images/index_fr.png)
+
 First we will create an extension helper in `Extensions/HttpContextExtensions.cs`
 
 ```c#
@@ -486,3 +490,70 @@ An example of how a page can modify the WET apptop:
 ```
 
 Since the `appTop` object is defined in javascript before the `AppTop` section is rendered, pages can include script blocks to modify the object before the app renders it.
+
+### Splash page
+
+![App using WET splash page](./images/splash.png)
+
+When the user lands on `/` instead of `/en/home` or `/fr/home`, we want to display a splash page.
+
+Create `Views/Home/Splash.cshtml`
+
+```html
+@{
+    Layout = null;
+}
+
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>@Localizer["AppName"]</title>
+
+    <!--CDTS-->
+    <script type="text/javascript" src="https://www.canada.ca/etc/designs/canada/cdts/gcweb/rn/cdts/compiled/soyutils.js"></script>
+    <script type="text/javascript" src="https://www.canada.ca/etc/designs/canada/cdts/gcweb/rn/cdts/compiled/wet-en.js"></script>
+    <script>
+        document.write(wet.builder.splashTop({
+        }));
+    </script>
+</head>
+<body class="splash">
+    <div id="splashContent">
+        <script type="text/javascript">
+            var sc = document.getElementById('splashContent');
+            sc.innerHTML = wet.builder.splash({
+                indexEng: "@Url.Action("Index", "Home", new { culture = "en"})",
+                indexFra: "@Url.Action("Index", "Home", new { culture = "fr"})",
+                termsEng: "https://tc.canada.ca/en/corporate-services/important-notices",
+                termsFra: "https://tc.canada.ca/fr/services-generaux/avis-importants"
+            });
+        </script>
+    </div>
+</body>
+</html>
+```
+
+This will not use the default layout, instead will include all the WET stuff required to display the splash page with proper language links.
+
+`HomeController.cs` also needs to be edited:
+
+```diff
+    [HttpGet("/{culture:regex(en)}/home")]
+    [HttpGet("/{culture:regex(fr)}/accueil")]
+    [HttpGet("/{culture:regex(en)}")]
+    [HttpGet("/{culture:regex(fr)}")]
+-    [HttpGet("/")]
+    public IActionResult Index()
+    {
+        return View();
+    }
+
++    [HttpGet("/")]
++    public IActionResult Splash()
++    {
++        return View();
++    }
+```
+
+Finally, `Resources/Home/Splash.en.resx` and `Resources/Home/Splash.fr.resx` need to be created with a value for `AppName`.
