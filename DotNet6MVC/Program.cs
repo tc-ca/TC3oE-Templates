@@ -3,8 +3,6 @@ using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.Identity.Web;
 using Microsoft.Identity.Web.UI;
-using System.Globalization;
-using Microsoft.Extensions.Options;
 using DotNet6MVC.Helpers;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -12,8 +10,6 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddAuthentication(OpenIdConnectDefaults.AuthenticationScheme)
     .AddMicrosoftIdentityWebApp(builder.Configuration.GetSection("AzureAd"));
-
-// builder.Services.AddLocalization();
 
 builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");
 builder.Services.Configure<RequestLocalizationOptions>(options => 
@@ -23,9 +19,7 @@ builder.Services.Configure<RequestLocalizationOptions>(options =>
     options.SetDefaultCulture("en");
     options.RequestCultureProviders = new[]{
         new UrlRequestCultureProvider { Options = options}
-        // new Microsoft.AspNetCore.Localization.Routing.RouteDataRequestCultureProvider { Options = options}
     };
-
 });
 
 builder.Services.AddControllersWithViews(options =>
@@ -37,7 +31,6 @@ builder.Services.AddControllersWithViews(options =>
     options.Filters.Add(new AuthorizeFilter(policy));
 })
 .AddViewLocalization();
-// .AddViewLocalization(Microsoft.AspNetCore.Mvc.Razor.LanguageViewLocationExpanderFormat.Suffix);
 
 builder.Services.AddRazorPages()
     .AddMicrosoftIdentityUI();
@@ -65,17 +58,6 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 app.UseRequestLocalization();
-// app.UseRequestLocalization(app.Services.GetRequiredService<IOptions<RequestLocalizationOptions>>().Value);
-// app.UseRequestLocalization(options =>
-// {
-//     options.SupportedCultures = new[]{
-//         new CultureInfo("en"),
-//         new CultureInfo("fr")
-//     };
-//     options.DefaultRequestCulture = new Microsoft.AspNetCore.Localization.RequestCulture(options.SupportedCultures[0]);
-//     options.RequestCultureProviders.Insert(0, new Microsoft.AspNetCore.Localization.Routing.RouteDataRequestCultureProvider { Options = options});
-// });
-
 
 app.UseRouting();
 
