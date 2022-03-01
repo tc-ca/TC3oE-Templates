@@ -1,0 +1,28 @@
+trigger:
+ paths:
+     include:
+         - $web
+ branches:
+     include:
+         - main
+
+variables:
+- group: myVariableGroup
+
+steps:
+- checkout: self
+- task: AzureCLI@2
+  displayName: Storage blob upload
+  inputs:
+    azureSubscription: 'mySubscriptionServiceConnection'
+    scriptType: pscore
+    scriptLocation: inlineScript
+    inlineScript: |
+      az storage blob upload-batch `
+        --account-name "$env:sa_name" `
+        --account-key "$env:storage_key" `
+        --destination "`$web" `
+        --source "`$web";
+  env:
+    sa_name: $(storage-account-name)
+    storage_key: $(storage-account-access-key)
