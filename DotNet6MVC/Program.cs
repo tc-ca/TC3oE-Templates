@@ -41,7 +41,7 @@ builder.Services.Configure<ForwardedHeadersOptions>(options =>
 {
     options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
     options.AllowedHosts.Add("myApplication.tc.gc.ca");
-    options.KnownProxies.Add(IPAddress.Parse("55.55.55.555"));
+    options.KnownProxies.Add(IPAddress.Parse("127.0.0.1")); // replace with your own
 });
 
 
