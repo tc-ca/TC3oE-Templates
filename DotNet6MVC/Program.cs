@@ -4,6 +4,8 @@ using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.Identity.Web;
 using Microsoft.Identity.Web.UI;
 using DotNet6MVC.Helpers;
+using Microsoft.AspNetCore.HttpOverrides;
+using System.Net;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -35,7 +37,42 @@ builder.Services.AddControllersWithViews(options =>
 builder.Services.AddRazorPages()
     .AddMicrosoftIdentityUI();
 
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+{
+    options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+    options.AllowedHosts.Add("myApplication.tc.gc.ca");
+    options.KnownProxies.Add(IPAddress.Parse("55.55.55.555"));
+});
+
+
+// https://stackoverflow.com/a/70684379/11141271
+// ensure the app redirects to the proper url after login
+// this is needed when running behind the application gateway, the app service doesn't know the url we want to use
+// this lets us use app services WITHOUT configuring custom domains.
+
+if (!builder.Environment.IsDevelopment())
+{
+    builder.Services.Configure<OpenIdConnectOptions>(OpenIdConnectDefaults.AuthenticationScheme, options =>
+    {
+        // options.SaveTokens = true; // this saves the token for the downstream api
+        options.Events = new OpenIdConnectEvents
+        {
+            OnRedirectToIdentityProvider = async ctxt =>
+            {
+                ctxt.ProtocolMessage.RedirectUri = "https://myApplication.tc.gc.ca/myApp-monApp/signin-oidc";
+                await Task.Yield();
+            }
+        };
+    });
+}
+
 var app = builder.Build();
+
+// Configure the app to work properly when running behind the application gateway
+// https://docs.microsoft.com/en-us/aspnet/core/host-and-deploy/proxy-load-balancer?view=aspnetcore-3.1#deal-with-path-base-and-proxies-that-change-the-request-path
+app.UseForwardedHeaders();
+// The app is reverse proxied at myApplication.tc.gc.ca/myApp-monApp
+app.UsePathBase("/myApp-monApp");
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
