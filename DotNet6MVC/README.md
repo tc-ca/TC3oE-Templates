@@ -12,6 +12,8 @@ This guide expects you to be using Visual Studio Code with the C# extension inst
 - AzureAD Authentication
 - Localization
 - WET support
+- Splash page
+- Application gateway reverse proxy
 
 ## Walthrough
 
