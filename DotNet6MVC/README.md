@@ -12,6 +12,8 @@ This guide expects you to be using Visual Studio Code with the C# extension inst
 - AzureAD Authentication
 - Localization
 - WET support
+- Splash page
+- Application gateway reverse proxy
 
 ## Walthrough
 
@@ -557,3 +559,50 @@ This will not use the default layout, instead will include all the WET stuff req
 ```
 
 Finally, `Resources/Home/Splash.en.resx` and `Resources/Home/Splash.fr.resx` need to be created with a value for `AppName`.
+
+
+### Reverse proxying using Azure application gateway
+
+Within `Program.cs`, we must explicitly configure the forwarding header options
+
+```diff
++builder.Services.Configure<ForwardedHeadersOptions>(options =>
++{
++    options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
++    options.AllowedHosts.Add("myApplication.tc.gc.ca");
++    options.KnownProxies.Add(IPAddress.Parse("55.55.55.555"));
++});
+
++// https://stackoverflow.com/a/70684379/11141271
++// ensure the app redirects to the proper url after login
++// this is needed when running behind the application gateway, the app service doesn't know the url we want to use
++// this lets us reverse proxy app services WITHOUT configuring custom domains.
++
++if (!builder.Environment.IsDevelopment())
++{
++    builder.Services.Configure<OpenIdConnectOptions>(OpenIdConnectDefaults.AuthenticationScheme, options =>
++    {
++        // options.SaveTokens = true; // this saves the token for the downstream api
++        // not sure if needed?
++
++        options.Events = new OpenIdConnectEvents
++        {
++            OnRedirectToIdentityProvider = async ctxt =>
++            {
++                ctxt.ProtocolMessage.RedirectUri = "https://myApplication.tc.gc.ca/myApp-monApp/signin-oidc";
++                await Task.Yield();
++            }
++        };
++    });
++}
+
+var app = builder.Build();
+
++// Configure the app to work properly when running behind the application gateway
++// https://docs.microsoft.com/en-us/aspnet/core/host-and-deploy/proxy-load-balancer?view=aspnetcore-3.1#deal-with-path-base-and-proxies-that-change-the-request-path
++app.UseForwardedHeaders();
+
++// The app is reverse proxied at myApplication.tc.gc.ca/myApp-monApp
++// Can remove if your app is hosted at the root
++app.UsePathBase("/myApp-monApp");
+```
